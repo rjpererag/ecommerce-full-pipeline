@@ -1,6 +1,18 @@
-version: '3.8'
-
 services:
+
+  db:
+    build:
+      context: ./backend/db_sql/database
+      dockerfile: Dockerfile
+    container_name: my-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - ".env"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     hostname: zookeeper
@@ -20,6 +32,7 @@ services:
     container_name: kafka
     depends_on:
       - zookeeper
+      - db
     ports:
       - "9092:9092"
       - "9093:9093"
@@ -54,3 +67,4 @@ volumes:
   zookeeper-data:
   zookeeper-logs:
   kafka-data:
+  postgres_data:
