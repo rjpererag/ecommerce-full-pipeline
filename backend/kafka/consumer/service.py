@@ -31,24 +31,24 @@ class Consumer:
         except Exception as e:
             self.__logger.error(f"No consumer created. {str(e)}")
 
-    def _execute_callback(self, callback: Callable):
+    def _execute_callback(self, callback: Callable, *args, **kwargs):
         self.__logger.info("Waiting for messages")
         for message in self.consumer:
-            callback(message)
+            callback(message, *args, **kwargs)
 
-    def __consume(self, callback: Callable) -> Any | None:
+    def __consume(self, callback: Callable, *args, **kwargs) -> Any | None:
         try:
-            return self._execute_callback(callback=callback)
+            return self._execute_callback(callback=callback, *args, **kwargs)
         except KeyboardInterrupt:
             self.__logger.info("\nShutting down consumer...")
         finally:
             self.consumer.close()
             self.__logger.info("Consumer closed")
 
-    def consume(self, callback: Callable) -> Any | None:
+    def consume(self, callback: Callable, *args, **kwargs) -> Any | None:
         if not self.consumer:
             self.__logger.error("Consumer not initialized")
             return None
 
-        return self.__consume(callback=callback)
+        return self.__consume(callback=callback, *args, **kwargs)
 
