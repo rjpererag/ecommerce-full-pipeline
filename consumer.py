@@ -22,6 +22,7 @@ def callback(message: ConsumerRecord, manager: BronzeManager):
     manager.add_transaction(
         transaction_details=data.get("transaction_details"),
         kafka_details=kafka_details,
+        processed_status=data.get("processed_status"),
     )
 
 def main() -> None:
