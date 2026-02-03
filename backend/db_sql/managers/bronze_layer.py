@@ -13,11 +13,14 @@ class BronzeManager(DBManager):
     @staticmethod
     def create_record(
             transaction_details: dict,
-            kafka_details: dict
+            kafka_details: dict,
+            processed_status: str,
+            transaction_id_key: str = "transaction_id",
     ) -> Bronze:
         return Bronze(
-            transaction_id = transaction_details["id"],
+            transaction_id = transaction_details[transaction_id_key],
             payload = transaction_details,
+            processed_status = processed_status,
             kafka_metadata = kafka_details,
         )
 
@@ -25,12 +28,14 @@ class BronzeManager(DBManager):
             self,
             transaction_details: dict,
             kafka_details: dict,
+            processed_status: str,
     ):
 
         try:
             new_record = self.create_record(
                 transaction_details=transaction_details,
-                kafka_details=kafka_details
+                kafka_details=kafka_details,
+                processed_status=processed_status,
             )
 
             with self.session() as session:

@@ -5,5 +5,7 @@ CREATE table IF NOT EXISTS bronze_layer(
     transaction_id TEXT NOT NULL,
     payload JSONB NOT NULL,
     kafka_metadata JSONB NOT NULL,
+    airflow_run_id TEXT,
+    processed_status TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+)

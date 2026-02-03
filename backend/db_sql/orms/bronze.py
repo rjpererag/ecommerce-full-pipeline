@@ -12,6 +12,8 @@ class Bronze(Base):
     transaction_id = Column(Text, nullable=False)
     payload = Column(JSONB, nullable=False)
     kafka_metadata = Column(JSONB, nullable=False)
+    airflow_run_id = Column(Text, nullable=True)
+    processed_status = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     def __repr__(self):
