@@ -32,6 +32,7 @@ x-airflow-common:
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     # The following line can be used to set a custom config file, stored in the local config folder
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
+    AIRFLOW_CONN_MY_POSTGRES_DB: ${AIRFLOW_CONN_MY_POSTGRES_DB}
   volumes:
     - ./backend/airflow/dags:/opt/airflow/dags
     - ./backend/airflow/logs:/opt/airflow/logs

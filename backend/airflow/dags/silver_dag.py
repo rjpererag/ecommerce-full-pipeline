@@ -9,7 +9,7 @@ from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from spark.manager import SparkPostgresSettings
 from spark.bronze_to_silver_job import run_spark_job
 
-DB_CONN_ID = "my_postgres_db_conn"
+DB_CONN_ID = "my_postgres_db"
 SPARK_SETTINGS = SparkPostgresSettings()
 
 
