@@ -6,8 +6,11 @@ import pendulum
 from airflow.sdk import dag, task
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 
+from spark.manager import SparkPostgresSettings
+from spark.bronze_to_silver_job import run_spark_job
 
 DB_CONN_ID = "my_postgres_db_conn"
+SPARK_SETTINGS = SparkPostgresSettings()
 
 
 @task.short_circuit
@@ -24,7 +27,7 @@ def check_if_data_exists(rows_count):
 @task
 def trigger_spark_job(run_id):
     print(f"Initializing PySpark job for Airflow Run ID: {run_id}")
-    print(f"Spark will filter Bronze using: WHERE kafka_metadata->>'airflow_run_id' = '{run_id}'")
+    run_spark_job(airflow_run_id=run_id, spark_settings=SPARK_SETTINGS)
 
 
 @dag(
