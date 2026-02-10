@@ -1,21 +1,22 @@
-import psycopg2
+import os
 from typing import Any
 from psycopg2.pool import SimpleConnectionPool
 from psycopg2 import DatabaseError, OperationalError
-from pyspark.sql import SparkSession, DataFrame
-from .settings import SparkPostgresSettings
 
-class SparkPostgresManager:
+from dataclasses import dataclass
 
-    def __init__(self, settings: SparkPostgresSettings):
+@dataclass
+class PostgresSettings:
+    db_name: str = os.getenv("POSTGRES_DB", "postgres")
+    db_user: str = os.getenv("POSTGRES_DB", "postgres")
+    db_host: str = os.getenv("POSTGRES_HOST", "localhost")
+    db_port: int = os.getenv("POSTGRES_PORT", 5432)
+    db_password: str = os.getenv("POSTGRES_PASSWORD", "mypassword")
 
-        self.settings = settings
-        self.spark_conn_properties = {
-            "user": settings.db_user,
-            "password": settings.db_password,
-            "driver": settings.db_driver,
-        }
 
+class PostgresManager:
+
+    def __init__(self, settings: PostgresSettings):
         self.postgres_conn_properties = {
             "user": settings.db_user,
             "password": settings.db_password,
@@ -24,7 +25,6 @@ class SparkPostgresManager:
             "database": settings.db_name,
         }
 
-        self.session: SparkSession | None = None
         self.postgres_pool: SimpleConnectionPool | None = None
 
     def build_conn_pool(
@@ -40,31 +40,6 @@ class SparkPostgresManager:
             print(f"Failed to build connection pool: {e}")
             return None
 
-
-    def build_session(self) -> None:
-        self.session = SparkSession.builder \
-            .appName(self.settings.name) \
-            .config("spark.jars.packages", "org.postgresql:postgresql:42.7.1") \
-            .getOrCreate()
-
-    def read(self, query: str) -> DataFrame:
-        df = self.session.read.jdbc(
-            url=self.settings.jdbc_url,
-            table=query,
-            properties=self.spark_conn_properties,
-        )
-        return df
-
-    def write_table(self, df: DataFrame, table_name: str, mode: str = "append") -> None:
-        df.write \
-            .format("jdbc") \
-            .option("url",  self.settings.jdbc_url) \
-            .option("dbtable",  table_name) \
-            .option("user",  self.settings.db_user) \
-            .option("password",  self.settings.db_password) \
-            .option("driver",  self.settings.db_driver) \
-            .mode(mode) \
-            .save()
 
     def _validate_postgres_operation(
             self,
@@ -118,7 +93,10 @@ class SparkPostgresManager:
 
         return result
 
-    def execute_select_query(self, query: str) -> Any:
+    def execute_select_query(
+            self,
+            query: str
+    ) -> Any:
 
         result = None
         conn = None
@@ -142,7 +120,10 @@ class SparkPostgresManager:
 
         return result
 
-    def drop_table(self, query: str) -> None:
+    def drop_table(
+            self,
+            query: str
+    ) -> None:
 
         conn = None
 
@@ -163,7 +144,6 @@ class SparkPostgresManager:
             finally:
                 if conn:
                     self.postgres_pool.putconn(conn)
-
 
     def test_postgres_connection(self):
 
