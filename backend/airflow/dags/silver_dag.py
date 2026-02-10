@@ -6,11 +6,16 @@ import pendulum
 from airflow.sdk import dag, task
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 
-from spark.manager import SparkPostgresSettings
-from spark.bronze_to_silver_job import run_spark_job
+from spark.job_settings.bronze_to_silver_job import get_job_settings
+from spark.bronze_to_silver_job import SparkPostgresSettings, SparkBronzeToSilverJob
+
+# from ..plugins.spark.job_settings.bronze_to_silver_job import get_job_settings
+# from ..plugins.spark.bronze_to_silver_job import SparkPostgresSettings, SparkBronzeToSilverJob
 
 DB_CONN_ID = "my_postgres_db"
-SPARK_SETTINGS = SparkPostgresSettings()
+
+JOB_SETTINGS = get_job_settings()
+MANAGER_SETTINGS = SparkPostgresSettings()
 
 
 @task.short_circuit
@@ -27,7 +32,15 @@ def check_if_data_exists(rows_count):
 @task
 def trigger_spark_job(run_id):
     print(f"Initializing PySpark job for Airflow Run ID: {run_id}")
-    run_spark_job(airflow_run_id=run_id, spark_settings=SPARK_SETTINGS)
+    job = SparkBronzeToSilverJob(
+        manager_settings=MANAGER_SETTINGS,
+        job_settings=JOB_SETTINGS,
+    )
+    results = job.run_job(airflow_run_id=run_id)
+
+    print("JOB FINISHED")
+    print("----------------------------------------")
+    print(results)
 
 
 @dag(
