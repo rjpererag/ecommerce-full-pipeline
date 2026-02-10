@@ -8,3 +8,6 @@ class SparkPostgresSettings:
     db_user: str = os.getenv("SPARK_DB_USER", "postgres")
     db_password: str = os.getenv("SPARK_DB_PASSWORD", "mypassword")
     db_driver: str = os.getenv("SPARK_DB_DRIVER", "org.postgresql.Driver")
+    db_host: str = os.getenv("SPARK_DB_HOST", "localhost")
+    db_port: str = os.getenv("SPARK_DB_PORT", 5432)
+    db_name: str = os.getenv("SPARK_DB_NAME", "spark")
