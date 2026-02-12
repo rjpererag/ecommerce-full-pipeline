@@ -1,6 +1,6 @@
 import random
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 
 from .dataclasses import Customer, Order, Item, Transaction
@@ -12,7 +12,7 @@ class FakeTransactionGenerator:
     def __init__(self):
         self.customer_pool: list = create_fake_customers_pool(size=100)
         self.products_pool: list = create_fake_products_pool(size=100)
-        self.payment_methods = ["credit card", "paypal", "cash"]
+        self.payment_methods = [1, 2, 3]
 
 
     @staticmethod
@@ -28,8 +28,12 @@ class FakeTransactionGenerator:
         return f"txn_{str(uuid.uuid4())}_{timestamp}"
 
     @staticmethod
-    def __get_timestamp() -> dict:
-        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    def __get_timestamp(n_days_before: int = 0) -> dict:
+        timestamp = datetime.now()
+        if n_days_before and (n_days_before < 0):
+            timestamp += timedelta(days=n_days_before)
+
+        now_str = timestamp.strftime("%Y-%m-%d %H:%M:%S")
         return {
             "compiled": now_str.replace("-", " ").replace(":", " ").replace(" ", ""),
             "extend": now_str.replace(" ", "T")
@@ -69,8 +73,8 @@ class FakeTransactionGenerator:
         order = {
             **process_items_list(items=item_list),
             "payment_method": random.choice(self.payment_methods),
-            "status": "completed",
-            "currency": "EUR"
+            "status": 5,
+            "currency": 1,
         }
 
         return Order(**order)
@@ -79,12 +83,13 @@ class FakeTransactionGenerator:
             self,
             return_dict: bool = False,
             number_of_items: int = 0,
+            n_days_before: int = 0,
     ) -> Transaction | dict:
 
         if number_of_items == 0:
             number_of_items = random.randint(1, 10)
 
-        timestamp = self.__get_timestamp()
+        timestamp = self.__get_timestamp(n_days_before=n_days_before)
         transaction_id = self._generate_transaction_id(timestamp=timestamp["compiled"])
 
         items = self.create_items_list(n_items=number_of_items)
@@ -102,16 +107,65 @@ class FakeTransactionGenerator:
 
         return self._handle_return_type(return_dict, customer_transaction)
 
-    def generate_multiple_transactions(
+
+    def _generate_multiple_transactions_static_day(
             self, size: int,
             number_of_items: int = 0,
             return_dict: bool = False,
+            n_days_before: int = 0,
     ) -> list[Transaction | dict]:
         transactions = []
         for _ in range(size):
             transactions.append(
                 self.generate_single_transaction(
-                    number_of_items=number_of_items, return_dict=return_dict
+                    number_of_items=number_of_items, return_dict=return_dict, n_days_before=n_days_before
                 )
             )
         return transactions
+
+
+    def _generate_multiple_transactions_random_day(
+            self, size: int,
+            number_of_items: int = 0,
+            return_dict: bool = False,
+            random_day_before: list[int] = 0,
+    ) -> list[Transaction | dict]:
+        transactions = []
+        for _ in range(size):
+
+            n_days_before = random.choices(random_day_before)[0]
+            if n_days_before > 0:
+                n_days_before *= -1
+
+            transactions.append(
+                self.generate_single_transaction(
+                    number_of_items=number_of_items,
+                    return_dict=return_dict,
+                    n_days_before=n_days_before,
+                )
+            )
+        return transactions
+
+
+    def generate_multiple_transactions(
+            self, size: int,
+            number_of_items: int = 0,
+            return_dict: bool = False,
+            n_days_before: int = 0,
+            random_day_before: list[int] | None = None
+    ) -> list[Transaction | dict]:
+
+        if not random_day_before:
+            return self._generate_multiple_transactions_static_day(
+                size=size,
+                number_of_items=number_of_items,
+                return_dict=return_dict,
+                n_days_before=n_days_before,
+            )
+
+        return self._generate_multiple_transactions_random_day(
+            size=size,
+            number_of_items=number_of_items,
+            return_dict=return_dict,
+            random_day_before=random_day_before,
+        )

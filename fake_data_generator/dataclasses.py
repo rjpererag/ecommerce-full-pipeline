@@ -9,7 +9,7 @@ class Customer:
 
 @dataclass
 class Order:
-    status: str
+    status: int
     payment_method: str
     currency: str
     subtotal: float
