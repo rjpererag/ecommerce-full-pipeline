@@ -80,8 +80,8 @@ def clean_staging_tables(upsert_results: dict) -> dict:
 
 
 @dag(
-    schedule=None,
-    start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
+    schedule="@daily",
+    start_date=pendulum.datetime(2026, 1, 1, tz="UTC"),
     catchup=False,
     tags=["bronze_to_silver"],
 )
