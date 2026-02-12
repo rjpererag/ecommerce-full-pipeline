@@ -303,6 +303,13 @@ services:
       - "5432:5432"
     env_file:
       - ".env"
+#    networks:
+#          - airflow-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -380,9 +387,42 @@ services:
     depends_on:
       - spark-master
 
+  grafana:
+      image: grafana/grafana:latest
+      container_name: grafana
+      ports:
+        - "3000:3000"
+      environment:
+        - GF_SECURITY_ADMIN_PASSWORD=admin
+        - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+        - POSTGRES_HOST=${POSTGRES_HOST}
+        - POSTGRES_PORT=${POSTGRES_PORT}
+        - POSTGRES_DB=${POSTGRES_DB}
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        - POSTGRES_SSLMODE=disable # Forzamos disable aquí por seguridad
+        - POSTGRES_VERSION=${POSTGRES_VERSION}
+#      networks:
+#        - airflow-network
+      volumes:
+        - grafana_data:/var/lib/grafana
+        - ./backend/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+        - ./backend/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+        # - ./grafana/provisioning:/etc/grafana/provisioning
+      restart: unless-stopped
+      depends_on:
+        db:
+          condition: service_healthy
+
+#networks:
+#  airflow-network:
+#    external: true
+#    name: ecommerce-full-pipeline_airflow-network
+
 volumes:
   zookeeper-data:
   zookeeper-logs:
   kafka-data:
   postgres_data:
   postgres-db-volume:
+  grafana_data:
