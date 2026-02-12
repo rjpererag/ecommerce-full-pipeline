@@ -75,42 +75,49 @@ class ReadParseAndMoveJob:
             df: DataFrame,
     ) -> DataFrame | None:
 
-        if df.isEmpty():
-            return None
+        try:
+            if df.isEmpty():
+                return None
 
-        exploded_df = explode_df(
-            df=df,
-            col_to_explode="items",
-            alias="item",
-            cols_to_keep=["transaction_id"]
-        )
+            exploded_df = explode_df(
+                df=df,
+                col_to_explode="items",
+                alias="item",
+                cols_to_keep=["transaction_id", "event_timestamp"]
+            )
 
-        parsed_df = self.parse(df=exploded_df, mapping=self.job_settings.items_mapping)
+            parsed_df = self.parse(df=exploded_df, mapping=self.job_settings.items_mapping)
 
-        final_df = parsed_df.select(
-            F.concat(F.col("transaction_id"), F.lit("-"), F.col("item_id")).alias("id"),
-            *[F.col(val[0]) for val in self.job_settings.items_mapping.values()],
-        )
+            final_df = parsed_df.select(
+                F.concat(F.col("transaction_id"), F.lit("-"), F.col("item_id")).alias("id"),
+                *[F.col(val[0]) for val in self.job_settings.items_mapping.values()],
+            )
 
-        return final_df
+            return final_df
+        except Exception as e:
+            raise Exception(f"explode_and_parse_items error: {str(e)}")
 
     def select_clean_and_parse_from_bronze(self, airflow_run_id: str) -> dict[str, DataFrame | None]:
-        bronze_df = self.read_from_bronze(airflow_run_id=airflow_run_id)
-        expanded_df = expand_json_to_col(df=bronze_df, schema=schema_del_payload)
-        clean_df = self.clean_df(df=expanded_df)
-        parsed_df = self.parse(df=clean_df, mapping=self.job_settings.columns_mapping)
-        parsed_df = change_to_timestamp(df=parsed_df, col_to_change="event_timestamp_str", alias="event_timestamp")
+        try:
+            bronze_df = self.read_from_bronze(airflow_run_id=airflow_run_id)
+            expanded_df = expand_json_to_col(df=bronze_df, schema=schema_del_payload)
+            clean_df = self.clean_df(df=expanded_df)
+            parsed_df = self.parse(df=clean_df, mapping=self.job_settings.columns_mapping)
+            parsed_df = change_to_timestamp(df=parsed_df, col_to_change="event_timestamp_str", alias="event_timestamp")
 
-        selected_dfs = {
-            df_name: self.get_df_from_col_selection(
-                df=parsed_df,
-                df_cols=cols,
-                distinct=True,
-            )
-            for df_name, cols in self.job_settings.silver_tables_cols.items()
-        }
+            selected_dfs = {
+                df_name: self.get_df_from_col_selection(
+                    df=parsed_df,
+                    df_cols=cols,
+                    distinct=True,
+                )
+                for df_name, cols in self.job_settings.silver_tables_cols.items()
+            }
+            return selected_dfs
 
-        return selected_dfs
+        except Exception as e:
+            raise Exception(f"select_clean_and_parse_from_bronze error: {str(e)}")
+
 
     def move_to_stage_table(
             self,
@@ -158,30 +165,34 @@ class ReadParseAndMoveJob:
             airflow_run_id: str
     ) -> dict:
 
-        final_results = {}
-        for df_name, df  in dfs.items():
-            result = self.move_to_stage_table(
-                df=df,
-                table_name=df_name,
-                airflow_run_id=airflow_run_id,
-            )
+        try:
+            final_results = {}
+            for df_name, df  in dfs.items():
+                result = self.move_to_stage_table(
+                    df=df,
+                    table_name=df_name,
+                    airflow_run_id=airflow_run_id,
+                )
 
-            final_results = {**final_results, **result}
+                final_results = {**final_results, **result}
 
-        return final_results
+            return final_results
+        except Exception as e:
+            raise Exception(f"move_multiple_tables_to_staging error: {str(e)}")
 
 
     @staticmethod
     def build_upsert_config(
             upsert_config: dict, dfs: dict, staging_results: dict
     ) -> dict:
+        try:
+            for table_name, config in upsert_config.items():
+                config["df"] = dfs.get(table_name)
+                config["arguments"]["staging_table"] = staging_results.get(table_name, {}).get("staging_table_name")
 
-        for table_name, config in upsert_config.items():
-            config["df"] = dfs.get(table_name)
-            config["arguments"]["staging_table"] = staging_results.get(table_name, {}).get("staging_table_name")
-
-        return upsert_config
-
+            return upsert_config
+        except Exception as e:
+            raise Exception(f"build_upsert_config error: {str(e)}")
 
     def run_job(self, airflow_run_id)-> dict:
 

@@ -32,6 +32,7 @@ __MAPPING_COLS = {**__ROOT_COLS, **__PAYLOAD_MAPPING_COLS}
 __TRANSACTION_ITEMS_MAPPING = {
     "item.id": ("item_id", None),
     "transaction_id": ("transaction_id", None),
+    "event_timestamp": ("event_timestamp", None),
     "item.category": ("category", None),
     "item.unit_price": ("unit_price", T.IntegerType()),
     "item.quantity": ("quantity", T.IntegerType()),
@@ -65,6 +66,7 @@ __SILVER_TABLE_COLS = {
     },
     "fact_transaction_items": {
         'transaction_id' : 'transaction_id',
+        'event_timestamp' : 'event_timestamp',
         'items': 'items',
     }
 }
