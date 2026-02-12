@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS fact_transaction_items(
 	id TEXT PRIMARY KEY NOT NULL,
 	item_id TEXT  NOT NULL,
 	transaction_id TEXT NOT NULL,
+	event_timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
 	category TEXT NOT NULL,
 	unit_price NUMERIC NOT NULL,
 	quantity NUMERIC NOT NULL,

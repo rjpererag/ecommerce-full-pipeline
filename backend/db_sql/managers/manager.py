@@ -1,5 +1,6 @@
 from .credentials import DatabaseCredentials
-from sqlalchemy import create_engine, Engine
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import sessionmaker, Session
 
 
