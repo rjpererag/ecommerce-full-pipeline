@@ -1,0 +1,15 @@
+apiVersion: 1
+
+datasources:
+  - name: MyPostgresDB
+    type: postgres
+    uid: "my_postgres_unique_id"
+    url: ${POSTGRES_HOST}:${POSTGRES_PORT}
+    database: ${POSTGRES_DB}
+    user: ${POSTGRES_USER}
+    secureJsonData:
+      password: ${POSTGRES_PASSWORD}
+    jsonData:
+      sslmode: ${POSTGRES_SSLMODE}
+      postgresVersion: ${POSTGRES_VERSION}
+    editable: true
