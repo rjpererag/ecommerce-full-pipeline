@@ -556,7 +556,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT \n    event_timestamp AS \"time\",\n    item_id AS metric,\n    (unit_price - \"cost\") * quantity AS revenue\nFROM fact_transaction_items\nWHERE \n    item_id IN ('$producto_top') \n    AND $__timeFilter(event_timestamp)\nORDER BY 1 ASC;",
+          "rawSql": "SELECT \n  date_trunc('day', event_timestamp) AS \"time\",\n  item_id AS metric,\n  SUM((unit_price - \"cost\") * quantity) AS revenue\nFROM fact_transaction_items\nWHERE \n  item_id IN ('$producto_top') \n  AND $__timeFilter(event_timestamp) \nGROUP BY 1, 2\nORDER BY 1 ASC;",
           "refId": "A",
           "sql": {
             "columns": [
