@@ -1,0 +1,30 @@
+services:
+  producer-mock:
+    build:
+      context: .
+      dockerfile: mock/producer/Dockerfile
+    container_name: kafka-producer-mock
+#    depends_on:
+#      kafka:
+#        condition: service_healthy
+    environment:
+      - KAFKA_BOOTSTRAP_SERVER=kafka:29092
+      - POSTGRES_HOST=db
+#    networks:
+#      - ecommerce-full-pipeline_airflow-network
+    restart: "no"
+
+  consumer-mock:
+    build:
+      context: .
+      dockerfile: mock/consumer/Dockerfile
+    container_name: kafka-consumer-mock
+#    depends_on:
+#      kafka:
+#        condition: service_healthy
+    environment:
+      - KAFKA_BOOTSTRAP_SERVER=kafka:29092
+      - POSTGRES_HOST=db
+#    networks:
+#      - ecommerce-full-pipeline_airflow-network
+    restart: "no"

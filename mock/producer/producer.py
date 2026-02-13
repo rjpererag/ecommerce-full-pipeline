@@ -1,8 +1,6 @@
-import random
-
 from backend.kafka.producer.service import Producer, ProducerSettings
 from backend.db_sql.managers.bronze_layer import BronzeManager, DatabaseCredentials
-from fake_data_generator import Generator
+from .fake_data_generator import Generator
 
 
 def create_transactions(

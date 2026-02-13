@@ -3,9 +3,7 @@ from backend.db_sql.managers.bronze_layer import BronzeManager, DatabaseCredenti
 from kafka.consumer.fetcher import ConsumerRecord
 
 def init_manager() -> BronzeManager | None:
-    db_creds = DatabaseCredentials(
-        host="localhost",
-    )
+    db_creds = DatabaseCredentials()
     manager = BronzeManager(credentials=db_creds)
     start_status = manager.start()
 
