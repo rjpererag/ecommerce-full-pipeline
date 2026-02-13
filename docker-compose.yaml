@@ -346,6 +346,12 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+    healthcheck:
+          test: ["CMD-SHELL", "nc -z localhost 29092 || exit 1"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+          start_period: 20s
     volumes:
       - kafka-data:/var/lib/kafka/data
 
