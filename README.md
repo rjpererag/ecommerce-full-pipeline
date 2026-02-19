@@ -197,11 +197,11 @@ The containers handled by this command includes:
 The volumes are created by this command as well.
 
 ```
-docker compose -f docker-compose-tools.yaml up --rm consumer-mock
+docker compose -f docker-compose-tools.yml run consumer-mock
 ```
 
 ```
-docker compose -f docker-compose-tools.yaml up --rm producer-mock
+docker compose -f docker-compose-tools.yml run producer-mock
 ```
 After starting the service's containers, to run the mock logic (fake data generation) the commands above are required,
 these will start the consumer-mock and producer-mock services defined in the docker-compose-tools.yaml.
