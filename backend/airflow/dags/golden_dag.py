@@ -44,7 +44,7 @@ def silver_to_gold():
     fact_transactions_row_count = SQLExecuteQueryOperator(
         task_id="claim_pending_records",
         conn_id=DB_CONN_ID,
-        sql=f"SELECT count(*) FROM {fact_transactions_table}",
+        sql=f"SELECT count(*) FROM {fact_transactions_table} WHERE event_timestamp::date = '{{{{ ds }}}}'::date",
         return_last=True,
         split_statements=False,
     )
